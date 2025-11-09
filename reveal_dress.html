@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="tl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reveal: Dress Emoji</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Arimo:wght@400;500;700&family=EB+Garamond:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* 1. THE SETUP */
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #f3f4f6;
+            display: grid;
+            grid-template-columns: 1fr;
+            margin: 0;
+            min-height: 100vh;
+            padding: 20px 0;
+            place-items: center;
+        }
+
+        .slide-container {
+            align-items: center;
+            background-color: #fff3dd; /* Main warm cream background */
+            border-radius: 8px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            height: 720px;
+            justify-content: flex-start; 
+            overflow: hidden;
+            padding: 40px 60px; 
+            position: relative;
+            width: 1280px;
+        }
+
+        /* 2. CONSISTENT TYPOGRAPHY */
+        .slide-container h1,
+        .slide-container h2,
+        .slide-container h3 {
+            font-family: 'EB Garamond', serif;
+            color: #403D39; 
+            margin: 0;
+            font-weight: 700;
+        }
+
+        .slide-container p,
+        .slide-container .subtitle,
+        .slide-container a {
+            font-family: 'Arimo', sans-serif;
+            color: #403D39;
+        }
+
+        .reveal-title {
+            font-size: 50px; 
+            text-align: center;
+            margin-bottom: 20px; 
+            margin-top: 20px; 
+            max-width: 900px;
+            line-height: 1.2;
+            z-index: 10;
+        }
+        
+        /* The main focus emoji */
+        .focus-emoji {
+            font-size: 150px;
+            margin-bottom: 20px; 
+            z-index: 10;
+        }
+
+        /* Container for the 3 action buttons */
+        .action-buttons-container {
+            display: flex;
+            gap: 25px;
+            margin-bottom: 20px; 
+            z-index: 100; /* Extremely high z-index for the buttons container */
+        }
+        
+        /* General Button Style (for Hint and Reveal) */
+        .action-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px 35px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 700;
+            font-family: 'Arimo', sans-serif;
+            font-size: 22px;
+            transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
+            cursor: pointer;
+            border: none;
+            color: #403D39;
+            box-shadow: 0 4px #8B4513; 
+        }
+
+        /* Specific styles for Hint (Yellow) and Reveal (Violet) */
+        #hint-button {
+            background-color: #f7dd7a; /* Opaque Yellow */
+            box-shadow: 0 4px #e0c86e;
+            z-index: 101;
+        }
+        
+        #reveal-link {
+            background-color: #8c5ecb; /* Opaque Violet */
+            color: #fff3dd; /* Light text color */
+            box-shadow: 0 4px #7647ad;
+            z-index: 101; 
+        }
+        
+        /* Hint Text Box */
+        #hint-text-box {
+            display: none; 
+            width: 80%;
+            max-width: 800px;
+            background-color: #fff3dd; 
+            border: 3px solid #403D39; 
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 20px;
+            z-index: 10;
+        }
+
+        #hint-text-box b {
+            color: #E76F51; 
+            font-weight: 700;
+        }
+
+        /* --- PENALTY STYLES --- */
+        #penalty-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; 
+            z-index: 90; 
+            overflow: hidden;
+        }
+        
+        /* Keyframe for falling and bouncing simulation */
+        @keyframes fallAndBounce {
+            0% { transform: translateY(-100%) scale(0.8); opacity: 0; }
+            50% { opacity: 1; transform: translateY(0%) scale(1.1); } 
+            70% { transform: translateY(80%) scale(0.9); } 
+            100% { transform: translateY(95%) scale(1); opacity: 0.9; } 
+        }
+
+        .penalty-emoji {
+            position: absolute;
+            font-size: 180px; 
+            opacity: 0; 
+            user-select: none;
+            animation: fallAndBounce ease-out forwards;
+        }
+
+        /* --- TIMER/NAV STYLES --- */
+        .nav-controls {
+            position: absolute;
+            top: 20px; 
+            left: 60px;
+            z-index: 100; 
+        }
+            
+        .nav-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background-color: rgba(0, 0, 0, 0); 
+            color: #403D39; 
+            padding: 10px 15px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 700;
+            font-family: 'Arimo', sans-serif;
+            font-size: 18px;
+            transition: background-color 0.2s, transform 0.1s, color 0.2s;
+            box-shadow: none; 
+            pointer-events: auto;
+        }
+
+        .nav-button:hover {
+            background-color: #E76F51; 
+            color: #fff3dd; 
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .nav-button:active {
+            transform: translateY(1px);
+        }
+
+        #timer-box {
+            position: absolute;
+            top: 20px;
+            right: 60px;
+            background-color: #E76F51; 
+            color: #fff3dd;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-family: 'Arimo', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            z-index: 100; 
+        }
+
+        #timer.red {
+            color: #ff0000; 
+        }
+    </style>
+</head>
+<body>
+
+    <div class="slide-container" id="dress-reveal-slide">
+
+        <div id="timer-box">Time Left: <span id="timer">30</span>s</div>
+
+        <div id="penalty-container"></div>
+
+        <div class="nav-controls">
+            <a href="choices.html" class="nav-button"><i class="fa-solid fa-arrow-left"></i> Bumalik sa pagpipilian</a>
+        </div>
+
+        <h2 class="reveal-title">Anong aspekto ng pag-unlad ng isang bansa or rehiyon ang sinasagisag ng emoji na ito?</h2>
+
+        <span class="focus-emoji">👗</span>
+
+        <div class="action-buttons-container">
+            <button id="hint-button" class="action-button" onclick="showHint()">
+                <i class="fa-solid fa-lightbulb"></i> Magbigay ng hint
+            </button>
+
+            <a href="reveal_dress_ans.html" id="reveal-link" class="action-button">
+                <i class="fa-solid fa-eye"></i> Ibunyag ang sagot
+            </a>
+        </div>
+
+        <div id="hint-text-box">
+            <p><b>Pahiwatig:</b> Ang damit ay simbolo ng <b>tradisyon</b>, <b>paniniwala</b>, at <b>pagkakakilanlan</b> ng isang grupo. Ang pag-unawa sa iba't ibang kaugalian ay nagpapatibay sa <b>pagkakaisa</b> ng bansa.</p>
+        </div>
+    </div>
+
+    <script>
+        let timerInterval;
+        let penaltyInterval; 
+        let timeLeft = 30;
+        // Stressful/Penalty Emojis
+        const emojiList = ['😂', '😅', '😥', '😨', '😱', '😫', '😩', '😵', '😡', '😠', '😤', '😢', '😭', '🤯', '😬', '🤢', '🤮', '🤡']; 
+
+        document.addEventListener('DOMContentLoaded', function() {
+            startTimer();
+            
+            // Stop timer AND penalty if user reveals the answer
+            document.getElementById('reveal-link').addEventListener('click', function() {
+                clearInterval(timerInterval);
+                clearInterval(penaltyInterval); // Stop pouring emojis
+            });
+        });
+
+        function showHint() {
+            const hintBox = document.getElementById('hint-text-box');
+            const hintButton = document.getElementById('hint-button');
+
+            hintBox.style.display = 'block';
+            hintButton.disabled = true;
+            hintButton.style.backgroundColor = '#d1c073'; 
+            hintButton.style.boxShadow = '0 4px #b8a665';
+        }
+
+        function startTimer() {
+            const timerDisplay = document.getElementById('timer');
+            
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timerDisplay.textContent = timeLeft;
+
+                if (timeLeft <= 5) {
+                    timerDisplay.style.color = 'red'; 
+                }
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    timerDisplay.textContent = '0';
+                    startPenaltyPour(); // Start continuous pouring
+                }
+            }, 1000); 
+        }
+
+        function addPenaltyEmoji() {
+            const container = document.getElementById('dress-reveal-slide');
+            const penaltyContainer = document.getElementById('penalty-container');
+            
+            const emoji = document.createElement('span');
+            emoji.className = 'penalty-emoji';
+            emoji.textContent = emojiList[Math.floor(Math.random() * emojiList.length)];
+
+            const containerWidth = container.offsetWidth;
+
+            const x = Math.random() * containerWidth;
+            
+            // Randomize animation delay and duration for staggered fall
+            const duration = 4 + Math.random() * 3; // 4s to 7s fall and bounce time
+            const delay = Math.random() * 2; // 0s to 2s delay for initial offset
+
+            emoji.style.left = `${x}px`;
+            emoji.style.animationDuration = `${duration}s`;
+            emoji.style.animationDelay = `-${delay}s`; 
+
+            penaltyContainer.appendChild(emoji);
+
+            // Clean up old emojis to prevent DOM bloat and performance issues
+            setTimeout(() => {
+                if (penaltyContainer.contains(emoji)) {
+                    penaltyContainer.removeChild(emoji);
+                }
+            }, duration * 1000 * 2); 
+        }
+
+        function startPenaltyPour() {
+            // Immediately add one emoji, then continuously add more
+            addPenaltyEmoji();
+            penaltyInterval = setInterval(addPenaltyEmoji, 300); // Add a new emoji every 300ms
+        }
+    </script>
+
+</body>
+</html>
